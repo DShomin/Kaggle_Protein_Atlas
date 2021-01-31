@@ -18,13 +18,14 @@ from torchvision import transforms
 from dataloader import *
 from models import *
 from trainer import *
-from transforms import get_transform
+from transforms import *
 from optimizer import *
 from utils import seed_everything, find_th, LabelSmoothingLoss
 
 import warnings
 warnings.filterwarnings('ignore')
 
+from glob import glob
 
 def main():
 
@@ -37,8 +38,8 @@ def main():
 
     # TODO dataset loading
     # glob setting
-    # image_path = 
-    # labels = 
+    # image_path = glob('../../LEAF/train_images/*')
+    # labels = pd.read_csv("../../LEAF/train.csv")['label'].values
 
     # TODO sampling dataset for debugging
     if args.DEBUG: 
