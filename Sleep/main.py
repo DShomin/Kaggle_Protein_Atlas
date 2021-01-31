@@ -38,14 +38,14 @@ def main():
 
     # TODO dataset loading
     # glob setting
-    # image_path = glob('../../LEAF/train_images/*')
-    # labels = pd.read_csv("../../LEAF/train.csv")['label'].values
+    # image_path = sorted(glob('../../polysom/sample_images/*'))
+    # labels = pd.read_csv("../../polysom/train.csv")['labels'].values
 
     # TODO sampling dataset for debugging
     if args.DEBUG: 
         total_num = 100
-        # image_path = image_path[:total_num]
-        # labels = labels[:total_num]
+        image_path = image_path[:total_num]
+        labels = labels[:total_num]
 
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=args.SEED)
     for fold_num, (trn_idx, val_idx) in enumerate(skf.split(image_path, labels)):
