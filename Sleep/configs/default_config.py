@@ -24,5 +24,6 @@ args = {
     "k_param":5,
     "alpha_param":0.5,
     "patience":3,
+    "albu": False,
     "DEBUG":False,
 }

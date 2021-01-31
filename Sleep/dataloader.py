@@ -69,3 +69,39 @@ class PathDataset(Dataset):
     def __len__(self): 
         return len(self.image_paths)
 
+class PathDataset2(Dataset): 
+    def __init__(self, image_paths, labels=None, transforms=None, is_test=False): 
+        self.image_paths = image_paths
+        self.labels = labels 
+        # self.default_transforms = default_transforms
+        self.transforms = transforms
+        self.is_test = is_test
+
+        self.imgs = []
+
+        for img_path in self.image_paths:
+            img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            # img = Image.fromarray(img)
+
+            if self.default_transforms is not None:
+                img = self.default_transforms(image=img)['image']
+    
+            self.imgs.append(img)
+
+    def __getitem__(self, index):
+        
+        img = self.imgs[index]
+        
+        if self.transforms:
+            img = self.transforms(image=img)['image']
+
+        if self.is_test:
+            return img#torch.tensor(img, dtype=torch.float32)
+        else:
+            label = self.labels[index]
+            return img, label#torch.tensor(img, dtype=torch.float32),\
+                 #torch.tensor(self.labels[index], dtype=torch.long)
+
+    def __len__(self): 
+        return len(self.image_paths)
