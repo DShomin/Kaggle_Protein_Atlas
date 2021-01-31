@@ -53,18 +53,30 @@ def main():
         val_img_paths = np.array(image_path)[val_idx]
         val_labels = np.array(labels)[val_idx]
 
-        default_transforms = transforms.Compose([transforms.Resize(args.input_size)])
-        train_transforms = get_transform(target_size=(args.input_size, args.input_size),
-                                        transform_list=args.train_augments, 
-                                        augment_ratio=args.augment_ratio)
-                                
-        valid_transforms = get_transform(target_size=(args.input_size, args.input_size),
-                                        transform_list=args.valid_augments, 
-                                        augment_ratio=args.augment_ratio,
-                                        is_train=False)  
+        if args.albu:
+            train_transforms = get_transform2(target_size=(args.input_size),
+                                            transform_list=args.train_augments)
+            valid_transforms = get_transform2(target_size=(args.input_size),
+                                            transform_list=args.train_augments,
+                                            is_train=False)
 
-        train_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, train_transforms)
-        valid_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, valid_transforms)
+            train_dataset = PathDataset2(trn_img_paths, trn_labels, train_transforms)
+            valid_dataset = PathDataset2(trn_img_paths, trn_labels, valid_transforms)
+
+        else:
+            default_transforms = transforms.Compose([transforms.Resize(args.input_size)])
+            train_transforms = get_transform(target_size=(args.input_size, args.input_size),
+                                            transform_list=args.train_augments, 
+                                            augment_ratio=args.augment_ratio)
+                                    
+            valid_transforms = get_transform(target_size=(args.input_size, args.input_size),
+                                            transform_list=args.valid_augments, 
+                                            augment_ratio=args.augment_ratio,
+                                            is_train=False)  
+
+            train_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, train_transforms)
+            valid_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, valid_transforms)
+        
         train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
         valid_loader = DataLoader(dataset=valid_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False, pin_memory=True)
 
