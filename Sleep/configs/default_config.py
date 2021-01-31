@@ -14,7 +14,7 @@ args = {
     "model":"tf_efficientnet_b4_ns",
     "optimizer":"AdamW",
     "scheduler":"Plateau",
-    "lr":"1e-4",
+    "lr":1e-4,
     "weight_decay":0.0,
     "train_augments":'random_crop, horizontal_flip, vertical_flip, random_rotate, random_grayscale',
     "valid_augments":'horizontal_flip, vertical_flip',
