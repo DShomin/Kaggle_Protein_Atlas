@@ -84,8 +84,8 @@ class PathDataset2(Dataset):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             # img = Image.fromarray(img)
 
-            if self.default_transforms is not None:
-                img = self.default_transforms(image=img)['image']
+            # if self.default_transforms is not None:
+            #     img = self.default_transforms(image=img)['image']
     
             self.imgs.append(img)
 
