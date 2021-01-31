@@ -27,25 +27,25 @@ def get_transform(
     
     for transform_name in transform_list:
         # default resize
-        transform.append(Albumentations.Resize(height=target_size, width=target_size,p=1))
+        transform.append(albumentations.Resize(height=target_size, width=target_size,p=1))
 
         if transform_name == 'random_crop':
             # scale = (0.6, 1.0) if is_train else (0.8, 1.0)
-            transform.append(Albumentations.RandomResizedCrop(height=target_size, width=target_size,p=1))
+            transform.append(albumentations.RandomResizedCrop(height=target_size, width=target_size,p=1))
         # elif transform_name == 'resize':
         #     transform.append(Resize(target_size))
         elif transform_name == 'horizontal_flip':
-            transform.append(Albumentations.HorizontalFlip(p=0.5))
+            transform.append(albumentations.HorizontalFlip(p=0.5))
         elif transform_name == 'vertical_flip':
-            transform.append(Albumentations.VerticalFlip(p=0.5))
+            transform.append(albumentations.VerticalFlip(p=0.5))
         elif transform_name == 'griddropout':
-            transform.append(Albumentations.GridDropout())
+            transform.append(albumentations.GridDropout())
 
 
     # transform.append(RandomApply(augments, p=augment_ratio))   
     transform.append(ToTensorV2())
-    transform.append(Albumentations.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
-    return Albumentations.Compose(transform)
+    transform.append(albumentations.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+    return albumentations.Compose(transform)
 
 
 def create_train_transforms(size=224):
