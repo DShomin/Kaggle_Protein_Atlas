@@ -18,7 +18,7 @@ from torchvision import transforms
 from dataloader import *
 from models import *
 from trainer import *
-from transforms import *
+from transforms import get_transform
 from optimizer import *
 from utils import seed_everything, find_th, LabelSmoothingLoss
 
@@ -36,7 +36,9 @@ def main():
 
 
     # TODO dataset loading
-
+    # glob setting
+    # image_path = 
+    # labels = 
 
     # TODO sampling dataset for debugging
     if args.DEBUG: 
@@ -53,30 +55,18 @@ def main():
         val_img_paths = np.array(image_path)[val_idx]
         val_labels = np.array(labels)[val_idx]
 
-        if args.albu:
-            train_transforms = get_transform2(target_size=(args.input_size),
-                                            transform_list=args.train_augments)
-            valid_transforms = get_transform2(target_size=(args.input_size),
-                                            transform_list=args.train_augments,
-                                            is_train=False)
+        # train_transforms = get_transform(target_size=(args.input_size),
+        #                                 transform_list=args.train_augments)
+        # valid_transforms = get_transform(target_size=(args.input_size),
+        #                                 transform_list=args.train_augments,
+        #                                 is_train=False)
 
-            train_dataset = PathDataset2(trn_img_paths, trn_labels, train_transforms)
-            valid_dataset = PathDataset2(trn_img_paths, trn_labels, valid_transforms)
+        train_transforms = create_train_transforms(args.input_size)
+        valid_transforms = create_val_transforms(args.input_size)
 
-        else:
-            default_transforms = transforms.Compose([transforms.Resize(args.input_size)])
-            train_transforms = get_transform(target_size=(args.input_size, args.input_size),
-                                            transform_list=args.train_augments, 
-                                            augment_ratio=args.augment_ratio)
-                                    
-            valid_transforms = get_transform(target_size=(args.input_size, args.input_size),
-                                            transform_list=args.valid_augments, 
-                                            augment_ratio=args.augment_ratio,
-                                            is_train=False)  
+        train_dataset = SleepDataset(trn_img_paths, trn_labels, train_transforms, masking='soft', is_test=False)
+        valid_dataset = SleepDataset(trn_img_paths, trn_labels, valid_transforms, masking='soft', is_test=False)
 
-            train_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, train_transforms)
-            valid_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, valid_transforms)
-        
         train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
         valid_loader = DataLoader(dataset=valid_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False, pin_memory=True)
 
@@ -86,7 +76,8 @@ def main():
         # optimizer definition
         optimizer = build_optimizer(args, model)
         scheduler = build_scheduler(args, optimizer, len(train_loader))
-        criterion = nn.BCELoss()
+        criterion = nn.CrossEntropyLoss()
+
 
         trn_cfg = {'train_loader':train_loader,
                     'valid_loader':valid_loader,
