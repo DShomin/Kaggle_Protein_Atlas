@@ -11,7 +11,7 @@ def build_model(args, device):
     if args.model == 'base': 
         model = CNN_Base().to(device)
     else:
-        model = timm.create_model(args.model, pretrained=args.mode!='test', num_classes=4)
+        model = timm.create_model(args.model, pretrained=args.pretrained, num_classes=4)
     # elif args.model == 'efficientnet_b4':
     #     if args.pretrained and args.mode != 'test':
     #         model = EfficientNet.from_pretrained('efficientnet-b4')
