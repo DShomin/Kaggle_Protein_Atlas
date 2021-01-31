@@ -1,3 +1,5 @@
+from conf import *
+
 import math
 import random
 from PIL import Image, ImageOps

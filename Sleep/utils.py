@@ -1,3 +1,5 @@
+from conf import *
+
 import os
 import math
 import random
