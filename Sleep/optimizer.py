@@ -1,3 +1,5 @@
+from conf import *
+
 import math
 import torch
 import itertools as it

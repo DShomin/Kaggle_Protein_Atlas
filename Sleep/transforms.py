@@ -12,7 +12,6 @@ from albumentations import Compose, RandomBrightnessContrast, \
     HorizontalFlip, FancyPCA, HueSaturationValue, OneOf, ToGray, \
     ShiftScaleRotate, ImageCompression, PadIfNeeded, GaussNoise, GaussianBlur
 
-
 def get_transform(
         target_size=256,
         transform_list='horizontal_flip', # random_crop | keep_aspect
@@ -45,7 +44,6 @@ def get_transform(
     transform.append(ToTensorV2())
     transform.append(Albumentations.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     return Albumentations.Compose(transform)
-
 
 
 def create_train_transforms(size=224):

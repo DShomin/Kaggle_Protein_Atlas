@@ -78,6 +78,7 @@ def main():
         scheduler = build_scheduler(args, optimizer, len(train_loader))
         criterion = nn.CrossEntropyLoss()
 
+
         trn_cfg = {'train_loader':train_loader,
                     'valid_loader':valid_loader,
                     'model':model,

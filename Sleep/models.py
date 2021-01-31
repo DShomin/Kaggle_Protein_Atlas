@@ -1,22 +1,26 @@
+# from conf import *
+
 import torch 
 import torch.nn as nn
 from efficientnet_pytorch import EfficientNet
 import torchvision.models as models
-
+import timm
 
 def build_model(args, device):
         
     if args.model == 'base': 
         model = CNN_Base().to(device)
-    elif args.model == 'efficientnet_b4':
-        if args.pretrained and args.mode != 'test':
-            model = EfficientNet.from_pretrained('efficientnet-b4')
-        else:
-            model = EfficientNet.from_name('efficientnet-b4')
-        in_features = model._fc.in_features
-        model._fc = nn.Linear(in_features, args.num_classes)
-    elif args.model == 'resnet50':
-        model = Resnet50(args.num_classes, dropout=False, pretrained=args.pretrained)
+    else:
+        model = timm.create_model(args.model, pretrained=args.mode!='test', num_classes=4)
+    # elif args.model == 'efficientnet_b4':
+    #     if args.pretrained and args.mode != 'test':
+    #         model = EfficientNet.from_pretrained('efficientnet-b4')
+    #     else:
+    #         model = EfficientNet.from_name('efficientnet-b4')
+    #     in_features = model._fc.in_features
+    #     model._fc = nn.Linear(in_features, args.num_classes)
+    # elif args.model == 'resnet50':
+    #     model = Resnet50(args.num_classes, dropout=False, pretrained=args.pretrained)
 
     if device: 
         model = model.to(device)
