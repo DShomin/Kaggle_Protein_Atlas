@@ -12,6 +12,8 @@ from albumentations import Compose, RandomBrightnessContrast, \
     HorizontalFlip, FancyPCA, HueSaturationValue, OneOf, ToGray, \
     ShiftScaleRotate, ImageCompression, PadIfNeeded, GaussNoise, GaussianBlur
 
+import cv2
+
 def get_transform(
         target_size=256,
         transform_list='horizontal_flip', # random_crop | keep_aspect
