@@ -1,3 +1,5 @@
+from conf import *
+
 import gc
 import os 
 import argparse
@@ -16,15 +18,15 @@ from torchvision import transforms
 from dataloader import *
 from models import *
 from trainer import *
-from transforms import *
+from transforms import get_transform
 from optimizer import *
-from utils import seed_everything, find_th
+from utils import seed_everything, find_th, LabelSmoothingLoss
 
 import warnings
 warnings.filterwarnings('ignore')
 
 
-def main(args):
+def main():
 
     # fix seed for train reproduction
     seed_everything(args.SEED)
@@ -33,94 +35,65 @@ def main(args):
     print("device", device)
 
 
-    if args.mode == 'train': 
+    # TODO dataset loading
+    # glob setting
+    # image_path = 
+    # labels = 
 
+    # TODO sampling dataset for debugging
+    if args.DEBUG: 
+        total_num = 100
+        # image_path = image_path[:total_num]
+        # labels = labels[:total_num]
 
-        # TODO dataset loading
+    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=args.SEED)
+    for fold_num, (trn_idx, val_idx) in enumerate(skf.split(image_path, labels)):
 
+        print(f"fold {fold_num} training starts...")
+        trn_img_paths = np.array(image_path)[trn_idx]
+        trn_labels = np.array(labels)[trn_idx]
+        val_img_paths = np.array(image_path)[val_idx]
+        val_labels = np.array(labels)[val_idx]
 
-        # TODO sampling dataset for debugging
-        if args.DEBUG: 
-            total_num = 100
-            # image_path = image_path[:total_num]
-            # labels = labels[:total_num]
+        # train_transforms = get_transform(target_size=(args.input_size),
+        #                                 transform_list=args.train_augments)
+        # valid_transforms = get_transform(target_size=(args.input_size),
+        #                                 transform_list=args.train_augments,
+        #                                 is_train=False)
 
-        skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=args.SEED)
-        for fold_num, (trn_idx, val_idx) in enumerate(skf.split(image_path, labels)):
+        train_transforms = create_train_transforms(args.input_size)
+        valid_transforms = create_val_transforms(args.input_size)
 
-            print(f"fold {fold_num} training starts...")
-            trn_img_paths = np.array(image_path)[trn_idx]
-            trn_labels = np.array(labels)[trn_idx]
-            val_img_paths = np.array(image_path)[val_idx]
-            val_labels = np.array(labels)[val_idx]
+        train_dataset = SleepDataset(trn_img_paths, trn_labels, train_transforms, masking='soft', is_test=False)
+        valid_dataset = SleepDataset(trn_img_paths, trn_labels, valid_transforms, masking='soft', is_test=False)
 
-            default_transforms = transforms.Compose([transforms.Resize(args.input_size)])
-            train_transforms = get_transform(target_size=(args.input_size, args.input_size),
-                                            transform_list=args.train_augments, 
-                                            augment_ratio=args.augment_ratio)
-                                    
-            valid_transforms = get_transform(target_size=(args.input_size, args.input_size),
-                                            transform_list=args.valid_augments, 
-                                            augment_ratio=args.augment_ratio,
-                                            is_train=False)  
+        train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
+        valid_loader = DataLoader(dataset=valid_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False, pin_memory=True)
 
-            train_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, train_transforms)
-            valid_dataset = PathDataset(trn_img_paths, trn_labels, default_transforms, valid_transforms)
-            train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
-            valid_loader = DataLoader(dataset=valid_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=False, pin_memory=True)
+        # define model
+        model = build_model(args, device)
 
-            # define model
-            model = build_model(args, device)
+        # optimizer definition
+        optimizer = build_optimizer(args, model)
+        scheduler = build_scheduler(args, optimizer, len(train_loader))
+        criterion = nn.CrossEntropyLoss()
 
-            # optimizer definition
-            optimizer = build_optimizer(args, model)
-            scheduler = build_scheduler(args, optimizer, len(train_loader))
-            criterion = nn.BCELoss()
+        trn_cfg = {'train_loader':train_loader,
+                    'valid_loader':valid_loader,
+                    'model':model,
+                    'criterion':criterion,
+                    'optimizer':optimizer,
+                    'scheduler':scheduler,
+                    'device':device,
+                    }
 
-            trn_cfg = {'train_loader':train_loader,
-                       'valid_loader':valid_loader,
-                       'model':model,
-                       'criterion':criterion,
-                       'optimizer':optimizer,
-                       'scheduler':scheduler,
-                       'device':device,
-                       }
+        train(args, trn_cfg)
 
-            train(args, trn_cfg)
-
-            del model, train_loader, valid_loader, train_dataset, valid_dataset
-            gc.collect()
-               
+        del model, train_loader, valid_loader, train_dataset, valid_dataset
+        gc.collect()
+            
 
 if __name__ == '__main__':
-
-    ########## ENVIRONMENT SETUP ############
-    parser = argparse.ArgumentParser(description='parser')
-    arg = parser.add_argument
-
-    # custom args
-    arg('--SEED', type=int, default=42)
-    arg('--n_folds', type=int, default=5, help='number of folds to train')
-    arg('--epochs', type=int, default=20, help='number of epochs to train')
-    arg('--num_classes', type=int, default=1)
-    arg('--input_size', type=int, default=512)
-    arg('--batch_size', type=int, default=8)
-    arg('--num_workers', type=int, default=4)
-    arg('--model', type=str, default='efficientnet_b4')
-    arg('--optimizer', type=str, default='AdamW')
-    arg('--scheduler', type=str, default='Plateau', help='scheduler in steplr, plateau, cosine')
-    arg('--lr', type=float, default=1e-4) 
-    arg('--weight_decay', type=float, default=0.0) 
-    arg('--train_augments', type=str, default='random_crop, horizontal_flip, vertical_flip, random_rotate, random_grayscale')
-    arg('--valid_augments', type=str, default='horizontal_flip, vertical_flip')
-    arg('--augment_ratio', default=0.5, type=float, help='probability of implementing transforms')
-    arg('--pretrained', default=False, type=bool, help='download pretrained model')
-    arg('--lookahead', default=False, type=bool, help='use lookahead')
-    arg('--k_param', type=int, default=5)
-    arg('--alpha_param', type=float, default=0.5)
-    arg('--patience', type=int, default=3, help='plateau scheduler patience parameter')
-    arg('--DEBUG', default=False, type=bool, help='if true debugging mode')
-    args = parser.parse_args()
-
-    main(args)
+    print(args)
+    main()
     
