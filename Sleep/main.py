@@ -20,7 +20,7 @@ from models import *
 from trainer import *
 from transforms import *
 from optimizer import *
-from utils import seed_everything, find_th
+from utils import seed_everything, find_th, LabelSmoothingLoss
 
 import warnings
 warnings.filterwarnings('ignore')
