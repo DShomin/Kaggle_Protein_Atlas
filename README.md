@@ -6,3 +6,6 @@
 
 ### default_config
 python main.py --config default_config
+
+### using albumentation
+python main.py --albu True
